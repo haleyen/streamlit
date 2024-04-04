@@ -1,69 +1,87 @@
 import streamlit as st
 import pandas as pd
 
-RFM_FILE = "result_rfm_quartile.csv"
-
+rfm_file = "result_rfm_quartile.csv"
+customer_transaction = 'data_customer_transaction.csv'
 RFM_segmentation_description = """
-            - **Loyal Customers**: khách hàng này mua hàng thường xuyên và có giá trị cao.
-            - **Potential Loyalist**: khách hàng có tiềm năng trở thành loyal customers, họ đã mua hàng nhiều lần và có giá trị.
-            - **Recent Customers**: khách hàng mới mua hàng và có thể trở thành loyal customers nếu được quản lý một cách hiệu quả.
-            - **Promising**: khách hàng có tiềm năng, họ có thể đã mua hàng nhiều lần nhưng không có giá trị lớn.
-            - **Customers Needing Attention**: khách hàng đã mua hàng thường xuyên và có giá trị cao trước đây, nhưng hiện tại đã giảm sút hoạt động mua hàng.
-            - **About To Sleep**: khách hàng mua hàng thường xuyên nhưng không có giá trị lớn, và hiện tại đang giảm sút hoạt động mua hàng.
-            - **At Risk**: khách hàng đã mua hàng thường xuyên và có giá trị, nhưng hiện tại đã giảm sút hoạt động mua hàng.
-            - **Cant Lose Them**: khách hàng đã mua hàng thường xuyên và có giá trị lớn, nhưng hiện tại đã giảm sút hoạt động mua hàng.
-            - **Hibernating**: khách hàng chỉ mua hàng ít lần và không có giá trị lớn.
-            - **Lost**: khách hàng đã từng mua hàng nhưng không còn hoạt động mua hàng nữa.
-            - **No activity**: khách hàng chưa có hoạt động mua hàng.            
+            - **Champions**: Bought recently, buy often and spend the most! Reward them. Can be early adopters for new products. Will promote your brand.
+            - **Loyal Customers**: Spend good money with us often. Responsive to promotions. Upsell higher value products. Ask for reviews. Engage them.
+            - **Potential Loyalist**: Recent customers, but spent a good amount and bought more than once. Offer membership / loyalty program, recommend other products.
+            - **Recent Customers**: Bought most recently, but not often. Provide on-boarding support, give them early success, start building relationship.
+            - **Promising**: Recent shoppers, but haven’t spent much. Create brand awareness, offer free trials
+            - **Customers Needing Attention**: Above average recency, frequency and monetary values. May not have bought very recently though. Make limited time offers, Recommend based on past purchases. Reactivate them.
+            - **About To Sleep**: Below average recency, frequency and monetary values. Will lose them if not reactivated. Share valuable resources, recommend popular products / renewals at discount, reconnect with them.
+            - **At Risk**: Spent big money and purchased often. But long time ago. Need to bring them back! Send personalized emails to reconnect, offer renewals, provide helpful resources.
+            - **Can’t Lose Them**: Made biggest purchases, and often. But haven’t returned for a long time. Win them back via renewals or newer products, don’t lose them to competition, talk to them.
+            - **Hibernating**: Last purchase was long back, low spenders and low number of orders. Offer other relevant products and special discounts. Recreate brand value.
+            - **Lost**: Lowest recency, frequency and monetary scores. Revive interest with reach out campaign, ignore otherwise.           
             """
-
 def FMscore(x,p,d):
-    if x <= d[p][0.25]:
+    if x <= d[p][0.2]:
         return 1
-    elif x <= d[p][0.50]:
+    elif x <= d[p][0.4]:
         return 2
-    elif x <= d[p][0.75]:
+    elif x <= d[p][0.6]:
         return 3
-    else:
+    elif x <= d[p][0.8]:
         return 4
+    else:
+        return 5
     
 def Rscore(x,p,d):
-    if x <= d[p][0.25]:
+    if x <= d[p][0.2]:
+        return 5
+    elif x <= d[p][0.4]:
         return 4
-    elif x <= d[p][0.50]:
+    elif x <= d[p][0.6]:
         return 3
-    elif x <= d[p][0.75]:
-        return 2
+    elif x <= d[p][0.8]:
+        return 4
     else:
         return 1
 
-def split_rfm_seg_quartile(x):
-    if x == 3:
+def split_rfm_seg(x):
+    Champions=[555, 554, 544, 545, 454, 455, 445]
+    LoyalCustomers=[543, 444, 435, 355, 354, 345, 344, 335]
+    PotentialLoyalist=[553, 551,552, 541, 542, 533, 532, 531, 452, 451, 442, 441, 431, 453, 433, 432, 423, 353, 352, 351, 342, 341, 333, 323]
+    RecentCustomers=[512, 511, 422, 421, 412, 411, 311]
+    Promising=[525, 524, 523, 522, 521, 515, 514, 513, 425, 424, 413,414, 415, 315, 314, 313]
+    CustomersNeedingAttention=[535, 534, 443, 434, 343, 334, 325, 324]
+    AboutToSleep=[331, 321, 312, 221, 213]
+    AtRisk=[255, 254, 245, 244, 253, 252, 243, 242, 235, 234, 225, 224, 153, 152, 145, 143, 142, 135, 134, 133, 125, 124]
+    CantLoseThem=[155, 154, 144, 214,215,115, 114, 113]
+    Hibernating=[332, 322, 231, 241, 251, 233, 232, 223, 222, 132, 123, 122, 212, 211]
+    Lost=[111, 112, 121, 131,141,151]
+    
+    if x in Champions:
+        return 'Champions'
+    elif x in LoyalCustomers:
         return 'Loyal Customers'
-    elif x == 4:
+    elif x in PotentialLoyalist:
         return 'Potential Loyalist'
-    elif x == 5:
+    elif x in RecentCustomers:
         return 'Recent Customers'
-    elif x == 6:
+    elif x in Promising:
         return 'Promising'
-    elif x == 7:
+    elif x in CustomersNeedingAttention:
         return 'Customers Needing Attention'
-    elif x == 8:
+    elif x in AboutToSleep:
         return 'About To Sleep'
-    elif x == 9:
+    elif x in AtRisk:
         return 'At Risk'
-    elif x == 10:
+    elif x in CantLoseThem:
         return 'Cant Lose Them'
-    elif x == 11:
+    elif x in Hibernating:
         return 'Hibernating'
-    elif x == 12:
+    elif x in Lost:
         return 'Lost'
     else:
         return 'No activity'
 
 def main():
-    pd00 = pd.read_csv(RFM_FILE)
-    pd00['CustomerID'] = pd00['CustomerID'].str.replace(r'\.0$', '')
+    pd00 = pd.read_csv(rfm_file)
+    pd01 = pd.read_csv(customer_transaction, dtype={'InvoiceNo': str})
+    #pd00['CustomerID'] = pd00['CustomerID'].str.replace(r'\.0$', '')
 
     limit_recency = 365
     limit_frequency = 1000
@@ -77,6 +95,17 @@ def main():
     choice = st.sidebar.selectbox('Menu', menu)
     
     if choice == '📚 Business Objective':
+        st.image("customer-segmentation.jpg", width=600)  
+        st.subheader ("🎯 Why is it necessary for customer segmentation?")
+        st.write("""
+                - Build better marketing campaigns
+                - Improve products and services => improve customer satisfaction
+                - Promote expanding new products and services suitable for the business's target audience.
+                - Price optimization
+                - Increase revenue and profits as well as reduce sales costs  
+        """)
+                
+        st.subheader ("👨‍💼 Customer Segmentation with RFM")        
         image = 'rfm_image.jpeg'
         st.image(image, caption='RFM Analysis', width=800)
         
@@ -93,6 +122,16 @@ def main():
                 - **Recency**: How much time has elapsed since a customer’s last activity or transaction with the brand? Activity is usually a purchase, although variations are sometimes used, e.g., the last visit to a website or use of a mobile app. In most cases, the more recently a customer has interacted or transacted with a brand, the more likely that customer will be responsive to communications from the brand. 
                 - **Frequency**: How often has a customer transacted or interacted with the brand during a particular period of time? Clearly, customers with frequent activities are more engaged, and probably more loyal, than customers who rarely do so. And one-time-only customers are in a class of their own. 
                 - **Monetary**: Also referred to as “monetary value,” this factor reflects how much a customer has spent with the brand during a particular period of time. Big spenders should usually be treated differently than customers who spend little. Looking at monetary divided by frequency indicates the average purchase amount – an important secondary factor to consider when segmenting customers. """)
+        
+        st.subheader ("📃 About Dataset")
+            
+        st.write("""
+                    The company mainly sells unique all-occasion gifts. Many customers of the company are wholesalers.
+                    
+                    This is a transnational data set which contains all the transactions occurring between 01/12/2010 and 09/12/2011 for a UK-based and registered non-store online retail.
+                    
+                    Dataset Information: [Click here](https://archive.ics.uci.edu/dataset/352/online+retail)
+                 """)
         st.subheader ("👭 Team members")
         st.write("""
         Le Yen Ha
@@ -106,18 +145,39 @@ def main():
         st.subheader ("Number of orders over the year")
         image = 'rfm_year_month_order.png'
         st.image(image, width=800)
-        
+        st.write("""
+        - From October 2010 to August 2011, the number of orders placed online did not differ much.
+        - Starting from September 2011 to November 2011, the number of orders placed increased significantly.
+        - Especially in November 2011, there was the highest number of orders, reaching about 83,635 orders.
+        - However, at the end of 2011, the number of orders decreased sharply to only 25,165 orders. (The explanation for the suddenly lower number of orders in December 2011 is that the dataset was only collected until December 9, 2011)
+        """)
         st.subheader ("Number of customers in different country")
         image = 'rfm_country.png'
         st.image(image, width=800)
-        
+        st.write("""
+                    - The main customers of the business are mostly from the United Kingdom
+                    - Customers from other regions account for an insignificant amount
+                    
+                    **Solutions:**
+                    - Businesses should focus on analyzing the United Kingdom market specifically to retain customers in this area
+                    - At the same time, businesses can focus on analyzing market trends in other regions to come up with policies to expand their market, as well as boost revenue from many regions.
+                 """)
         st.subheader ("Distribution of Receny, Frequency, Monetary value")
         image = 'rfm_distribution.png'
         st.image(image, width=800)
         
+        image = 'rfm_quantile.png'
+        st.image(image, width=800)
+        st.write("""
+                    - The average number of orders is 3.46, with a wide range (1 to 209).
+                    - On average, customers made purchases over 3.15 days, with a similar wide range (1 to 132).
+                    - The average purchase amount is 1849.93, with a high standard deviation of 7919.03. This indicates a wide distribution of purchase values.
+                    - The average DayDiff of 117.07 with a standard deviation of 111.33 highlights the irregularity in customer purchase intervals.
+                 """)
+        
         
         # Segmentation description
-        st.subheader ("There are 10 RFM segments with following description:")
+        st.subheader ("There are 11 RFM segments with following description:")
         with st.expander("Customer Segmentation Description", expanded=False):
             st.write(RFM_segmentation_description)
             st.write("")
@@ -126,7 +186,7 @@ def main():
             
     if choice == '🎯 Customer Segmentation':    
         st.subheader ("Input customer information")
-        choice_input = st.radio("Please choose", options=["1. Input customerID", "2. Input new customer information"])
+        choice_input = st.radio("Please choose", options=["1. Input customerID", "2. Search customerID", "3. Input new customer information"])
 
         # Segmentation description
         with st.expander("Customer Segmentation Description", expanded=False):
@@ -148,27 +208,48 @@ def main():
             col1,col2 = st.columns([1,1])
             with col1:
                 st.markdown("Example:")  
-                st.info("CustomerID: 12346, 12374")
+                st.info("CustomerID: 12346")
 
-            st.write("CustomerID:", customer_id) 
+            if customer_id:
+                if st.button("Get segmentation"):
+                    if customer_id in pd00['CustomerID'].values:
+                        st.dataframe(pd00[pd00['CustomerID'] == customer_id][['CustomerID','Country','Recency','Frequency','Monetary','Segment']].reset_index(drop=True), width=1000)
+                        st.markdown("Detail transaction:")  
+                        st.dataframe(pd01[pd01['CustomerID'] == customer_id][['Date','InvoiceDate','InvoiceNo','StockCode','Description','Quantity','UnitPrice']].sort_values('Date').reset_index(drop=True), width=1000)
+                    else:
+                        st.error(f"CustomerID {customer_id} does not exist")
+            else:
+                st.button("Get segmentation", disabled=True) 
+                    
+        elif choice_input == "2. Search customerID":
+            # 2.2 search ID khách hàng để tìm RFM segmentation
+            st.write("##### 2. Search customerID")
+            
+            list_dropdown = sorted(list(pd00['CustomerID'].unique()))
+            option = st.selectbox("Filter customerID", index=0, options=['<Choose one>']+list_dropdown) 
+            st.write('You selected:', option)
+            
+            if option == '<Choose one>':
+                st.dataframe(pd.DataFrame(),width=1000)
+            else:
+                st.dataframe(pd00[pd00['CustomerID'] == option][['CustomerID','Country','Recency','Frequency','Monetary','Segment']].reset_index(drop=True), 
+                         width=1000)
+                st.markdown("Detail transaction:")  
+                st.dataframe(pd01[pd01['CustomerID'] == option][['Date','InvoiceDate','InvoiceNo','StockCode','Description','Quantity','UnitPrice']].sort_values('Date').reset_index(drop=True), width=1000)
 
-            if customer_id: 
-                if customer_id in pd00['CustomerID'].values:
-                    st.dataframe(pd00[pd00['CustomerID'] == customer_id][['CustomerID','Recency','Frequency','Monetary','RFM_Name']],
-                                 width=1000)
-                else:
-                    st.error(f"CustomerID {customer_id} does not exist")      
         else:
-            # 2.2.1 Input thông tin mới khách hàng
+            # 2.3.1 Input thông tin mới khách hàng
             st.write("##### 2.1 Input new customer information")
-            st.write("Input RFM information of maximum 5 customers. Input value must be number")
+            st.write("Input RFM information of **maximum 5 customers**. Input value must be number.")
             
             row1_spacer1, row1_1, row1_spacer2 = st.columns((0.0001, 4, 2))
             with row1_1:
                 code = f"""
-                Recency value range from 0 to {limit_recency} (days)
-                Frequency value range from 0 to {limit_frequency} (orders)
-                Monetary value range from 0 to {limit_monetary} (VND)
+                Recency value range from 0 to {limit_recency} (days).
+                
+                Frequency value range from 0 to {limit_frequency} (orders).
+                
+                Monetary value range from 0 to {limit_monetary} (VND).
                 """
                 st.code(code, language='python')
 
@@ -192,11 +273,12 @@ def main():
                     frequency = st.text_input(f"Frequency {i}", key=f"frequency_{i}")
                 with col3:
                     monetary = st.text_input(f"Monetary {i}", key=f"monetary_{i}")
-                df_customer = df_customer.append({"Recency": recency, "Frequency": frequency, "Monetary": monetary}, ignore_index=True)
+                new_data = {"Recency": recency, "Frequency": frequency, "Monetary": monetary}
+                df_customer = pd.concat([df_customer, pd.DataFrame([new_data], columns=new_data.keys())], ignore_index=True)
                 if i < 5 and not st.checkbox(f"Input new customer", key=f"add_new_{i}"):
                     break   
             
-            # 2.2.2 Summit để phân cụm khách hàng
+            # 2.3.2 Summit để phân cụm khách hàng
             if recency and frequency and monetary:
                 if st.button("Get segmentation"):
                     try:
@@ -206,26 +288,31 @@ def main():
 
                         if int(recency)<=limit_recency and int(frequency)<=limit_frequency and int(monetary)<=limit_monetary:
                             st.write("##### 2.2 Segment new customer")
-                            quantiles = {'Recency': {0.25: 23.0, 0.5: 72.0, 0.75: 199.0},
-                                         'Frequency': {0.25: 1.0, 0.5: 1.0, 0.75: 4.0},
-                                         'Monetary': {0.25: 240.775, 0.5: 632.4749999999999, 0.75: 1642.825}}
-                            df_customer['R_quartile'] = df_customer['Recency'].apply(Rscore, args=('Recency',quantiles))
-                            df_customer['F_quartile'] = df_customer['Frequency'].apply(FMscore, args=('Frequency',quantiles))
-                            df_customer['M_quartile'] = df_customer['Monetary'].apply(FMscore, args=('Monetary',quantiles))
-                            df_customer['RFM_Segment'] = (df_customer.R_quartile.map(str)+df_customer.F_quartile.map(str)+df_customer.M_quartile.map(str))
-                            df_customer['RFM_Score'] = df_customer[['R_quartile','F_quartile','M_quartile']].sum(axis=1)
-                            df_customer['RFM_Name'] = df_customer['RFM_Score'].apply(split_rfm_seg_quartile)
+                            
+                            quintiles = {'Recency': {0.2: 17.0, 0.4: 49.0, 0.6: 113.0, 0.8: 234.0},
+                                         'Frequency': {0.2: 1.0, 0.4: 1.0, 0.6: 2.0, 0.8: 4.0},
+                                         'Monetary': {0.2: 181.09, 0.4: 437.7, 0.6: 914.93, 0.8: 2000.86}}
+                            df_customer['R_quintile'] = df_customer['Recency'].apply(Rscore, args=('Recency',quintiles))
+                            df_customer['F_quintile'] = df_customer['Frequency'].apply(FMscore, args=('Frequency',quintiles))
+                            df_customer['M_quintile'] = df_customer['Monetary'].apply(FMscore, args=('Monetary',quintiles))                            
+                            df_customer['RFM_Segment'] = (df_customer['R_quintile'].astype(str) 
+                                                          + df_customer['F_quintile'].astype(str) 
+                                                          + df_customer['F_quintile'].astype(str))
+                            df_customer['RFM_Segment'] = df_customer['RFM_Segment'].astype(int)
+                            df_customer['RFM_Name'] = df_customer['RFM_Segment'].apply(split_rfm_seg)
+                            
                             df_customer_show = df_customer[['Recency','Frequency','Monetary','RFM_Name']].rename(columns={'RFM_Name':'Segmentation'})
                             st.dataframe(df_customer_show, width=1000)
                             
                             st.download_button("Download customer segmentation as CSV file", 
                                                df_customer_show.to_csv(index=False).encode('utf-8'), 
                                                "rfm_segmentation.csv", "csv", key='download-csv')
-                            # st.success("Download successful!", icon="✅")                           
                             
                         else:
                             st.error('Invalid input value. Please check carefully and try again.')
                     except Exception as e:
+                        print(e)
+                        st.error(e)
                         st.error('Please input only number (no special characters, no comma, no dot).')
             else:
                 st.button("Get segmentation", disabled=True)  
